@@ -1,0 +1,49 @@
+.project
+.classpath
+*.iml
+*.ipr
+*.iws
+.idea/
+.gradle/
+release/
+package-lock.json
+node_modules/
+dist/
+
+.gradle
+/dist/
+/build/
+/gradle/
+/out/
+/bin/
+/caches/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+### Eclipse ###
+.settings
+.classpath
+.project
+
+### Vue ###
+package-lock.json
