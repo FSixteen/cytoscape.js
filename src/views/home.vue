@@ -1,6 +1,6 @@
 <template>
   <div style="height: 100%; width: 100%; border: 1px solid #00F;">
-    <div style="position: fixed; left: 20pt; top: 20pt; z-index: 99999;">
+    <div style="position: fixed; left: 20pt; top: 50pt; z-index: 99999;">
       <Button size="small" @click="addEles">添加</Button>
       <Button size="small" @click="delEles">删除</Button>
     </div>

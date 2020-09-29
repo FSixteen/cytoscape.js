@@ -1,9 +1,61 @@
 <style scoped>
+  .tools {
+    display: inline-block;
+    height: 45px;
+    width: 45px;
+    vertical-align: middle;
+  }
+
+  .center-center {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-items: center;
+    justify-content: center;
+  }
 </style>
 
 <template>
   <div style="position: relative; height: 100%; width: 100%; z-index: 0;">
     <div id="cytoscape_id" style="height: 100%; width: 100%; z-index: 1;"></div>
+    <div id="cytoolbar_id" style="position: absolute; left: 5pt; top: 5pt; z-index: 2; background-color: rgba(249, 249, 249, 0.9);">
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="放大" type="ios-add-circle-outline" @click="magnifying()"/>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="缩小" type="ios-remove-circle-outline" @click="contractible()"/>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="合适大小" type="ios-resize" @click="resize()"/>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="高亮邻居" type="ios-color-wand-outline" @click="highlight()"/>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="刷新布局" type="ios-sync" @click="refresh({name: 'cola'})"/>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="网格布局" type="ios-apps-outline" @click="refresh({name: 'grid'})"/>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="环形布局" type="ios-globe-outline" @click="refresh({name: 'circle'})"/>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -98,9 +150,9 @@
             },
             {
               // fillColor: 'rgba(200, 200, 200, 0.75)', // optional: custom background color for item
-              content: '操作3', // html/text content to be displayed in the menu
+              content: '高亮邻居', // html/text content to be displayed in the menu
               // contentStyle: {}, // css key:value pairs to set the command's css in js if you want
-              select: (ele) => alert(ele.id()),  // a function to execute when the command is selected
+              select: (ele) => this.lightOn([ele.id()]),  // a function to execute when the command is selected
               enabled: true, // whether the command is selectable
             },
             {
@@ -170,6 +222,9 @@
           'target-arrow-color': '#61bffc', /*箭头颜色*/
           'line-color': '#61bffc', /*线条颜色*/
         })
+        /*高亮样式*/
+        .selector('.light-off')
+        .style({'opacity': '0.1',})
       ;
     },
     data() {
@@ -216,6 +271,80 @@
         });
         this.$cy.endBatch();
       },
+      /***************************工具栏************************/
+      /**
+       * 缩放大小.
+       * @param zoom 增减幅度.
+       */
+      zoom(zoom) {
+        /** 获取已选择内容 */
+        let selectedEles = this.$cy.elements('node:selected');
+        /** 获取已选择内容中得第一个, 没有选择为null */
+        let selectedEle = selectedEles && selectedEles.length ? selectedEles[0] : null;
+        /** 获取画布偏移位置 */
+        let pan = this.$cy.pan();
+        /** 计算原点坐标 */
+        let [x, y] = selectedEle ? [selectedEle.position('x'), selectedEle.position('y')] : [pan.x, pan.y];
+        let level = this.$cy.zoom() + zoom;
+        (level > this.$cy.maxZoom) && (level = this.$cy.maxZoom);
+        (level < this.$cy.minZoom) && (level = this.$cy.minZoom);
+        this.$cy.zoom({level: level, renderedPosition: {x: x, y: y}});
+      },
+      /** 放大 */
+      magnifying() {
+        this.zoom(0.3);
+      },
+      /** 缩小 */
+      contractible() {
+        this.zoom(-0.3);
+      },
+      /** 合适大小 */
+      resize() {
+        this.$cy.fit();
+      },
+      /**
+       * 高亮.
+       * @param ele 某元素ID
+       */
+      lightOn(ele) {
+        this.$cy.startBatch();
+        this.$cy.batch(() => {
+          this.$cy.elements().addClass("light-off"); //*添加样式*/
+          let elements = ((Array.isArray ? Array.isArray(ele) : null != ele && ele instanceof Array) ? ele : [ele]);
+          elements.forEach(__ => {
+            this.$cy.getElementById(__).removeClass("light-off");
+            this.$cy.getElementById(__).neighborhood().removeClass("light-off");
+          });
+        });
+        this.$cy.once('click', () => this.lightOff());
+        this.$cy.endBatch();
+      },
+      /**
+       * 取消高亮.
+       */
+      lightOff() {
+        this.$cy.startBatch();
+        this.$cy.batch(() => this.$cy.elements().removeClass("light-off") /*移除样式*/);
+        this.$cy.endBatch();
+      },
+      /** 高亮邻居 */
+      highlight() {
+        /** 获取已选择内容 */
+        let selectedEles = this.$cy.elements('node:selected');
+        /** 获取已选择内容中得第一个, 没有选择为null */
+        let selectedEle = selectedEles && selectedEles.length ? selectedEles[0] : null;
+        (selectedEle) && (this.lightOn(selectedEle.id()));
+      },
+      /**
+       * 刷新布局.
+       * name取值范围:
+       * ['grid', 'circle', 'cola', 'avsdf', 'cose-bilkent', ]
+       * @param {name = 'cola......', randomize = true | false, animate = true | false}
+       */
+      refresh({name = 'cola', randomize = false, animate = true} = {}) {
+        this.$cy.layout({name: name, randomize: randomize, animate: animate,}).run();
+      },
+      /***************************工具栏************************/
     },
   }
 </script>
