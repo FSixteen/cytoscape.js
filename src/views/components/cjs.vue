@@ -55,6 +55,16 @@
           <Icon style="font-size: 32px; cursor: pointer;" title="环形布局" type="ios-globe-outline" @click="refresh({name: 'circle'})"/>
         </div>
       </div>
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="局部导出" type="ios-crop-outline" @click="exportCutPngAndWatermark()"/>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="center-center">
+          <Icon style="font-size: 32px; cursor: pointer;" title="全图导出" type="ios-reverse-camera-outline" @click="exportPngAndWatermark()"/>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -343,6 +353,100 @@
        */
       refresh({name = 'cola', randomize = false, animate = true} = {}) {
         this.$cy.layout({name: name, randomize: randomize, animate: animate,}).run();
+      },
+      /**
+       * 绘制水印.
+       */
+      drawWatermark({
+                      canvas = null,
+                      words = `机密信息, 请勿外传! 时间: ${new Date().toTimeString()}`,
+                      width = 200,
+                      height = 200,
+                      font = "15px microsoft yahei", //水印字体设置
+                      fillStyle = "rgba(0, 0, 0, 0.3)", //水印字体颜色设置
+                      rotate = 10 * Math.PI / 180, //水印字体倾斜角度设置, 正数顺时针, 负数逆时针
+                      positionX = 20, // X 轴偏移像素
+                      positionY = 20, // Y 轴偏移像素
+                    } = {}) {
+        let tempCanvas = document.createElement('canvas');
+        [tempCanvas.width, tempCanvas.height] = [width, height];
+        let tempCtx = tempCanvas.getContext("2d");
+        /** 清除画布 */
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        /** 文字倾斜角度 */
+        tempCtx.rotate(rotate);
+        /** 字体样式及颜色 */
+        [tempCtx.font, tempCtx.fillStyle] = [font, fillStyle];
+
+        let [wordsArr, index, s] = [[], 0, ''];
+        for (let code of words) {
+          s += code;
+          code.codePointAt(0) > 255 ? index += 2 : index += 1;
+          (index > tempCanvas.width / 11.25) && (wordsArr.push(s)) && ([index, s] = [0, '']);
+        }
+        wordsArr.push(s);
+
+        for (let i = 0; i < wordsArr.length; i++) {
+          tempCtx.fillText(wordsArr[i], positionX, positionY + i * 20, tempCanvas.width - positionX);
+        }
+
+        let ctx = canvas.getContext("2d");
+        ctx.fillStyle = ctx.createPattern(tempCanvas, "repeat");
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      },
+      /**
+       * 导出全局图片.
+       */
+      exportPng() {
+        let blob = this.$cy.png({output: 'blob', bg: 'transparent', full: true, scale: 4, quality: 1});
+        let [aLink, evt] = [document.createElement('a'), document.createEvent("HTMLEvents")];
+        evt.initEvent("click", true, true);
+        [aLink.download, aLink.href] = [`${new Date().getTime()}.png`, URL.createObjectURL(blob)];
+        aLink.dispatchEvent(evt);
+        aLink.click();
+      },
+      /**
+       * 导出全局图片带有水印.
+       */
+      exportPngAndWatermark() {
+        let time = new Date().getTime();
+        let blob = this.$cy.png({output: 'blob', bg: 'transparent', full: true, scale: 4, quality: 1});
+
+        let image = new Image();
+        [image.id, image.crossOrigin, image.src] = [time, 'anonymous', window.URL.createObjectURL(blob)];
+        image.onload = () => {
+          let canvas = document.createElement('canvas');
+          [canvas.width, canvas.height] = [image.width, image.height];
+          let ctx = canvas.getContext('2d');
+          /** 绘制水印 */
+          this.drawWatermark({canvas: canvas, words: `机密信息, 请勿外传! 时间: ${new Date().toTimeString()}`});
+          /** 绘制原图 */
+          ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
+          ctx.save();
+          let [aLink, evt] = [document.createElement('a'), document.createEvent("HTMLEvents")];
+          evt.initEvent("click", true, true);
+          [aLink.download, aLink.href] = [`${time}.png`, canvas.toDataURL("image/png")];
+          aLink.dispatchEvent(evt);
+          aLink.click();
+        }
+      },
+      /**
+       * 导出局部图片.
+       */
+      exportCutPng({watermark = false} = {}) {
+        let unselectedVertexes = this.$cy.elements('node:unselected')
+        if (!unselectedVertexes || 0 == unselectedVertexes.length) {
+          return false;
+        }
+        let remove = unselectedVertexes.remove(); // 保留删除内容
+        watermark ? this.exportPngAndWatermark() : this.exportPng();
+        (remove && remove.length) && (remove.restore()); // 恢复删除内容
+      },
+      /**
+       * 导出局部图片.
+       */
+      exportCutPngAndWatermark() {
+        this.exportCutPng({watermark: true});
       },
       /***************************工具栏************************/
     },
