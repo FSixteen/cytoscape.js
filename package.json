@@ -1,0 +1,76 @@
+{
+  "name": "cytoscapeJsPrimaryArticle",
+  "description": "cytoscape.js初级篇",
+  "author": "Shengjun Liu (刘胜军)",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "test:e2e": "vue-cli-service test:e2e"
+  },
+  "dependencies": {
+    "@babel/runtime-corejs2": "^7.11.2",
+    "core-js": "^2.6.11",
+    "cytoscape": "^3.16.1",
+    "cytoscape-avsdf": "^1.0.0",
+    "cytoscape-cola": "^2.4.0",
+    "cytoscape-cose-bilkent": "^4.1.0",
+    "cytoscape-cxtmenu": "^3.2.0",
+    "iview": "^3.5.4",
+    "querystring": "^0.2.0",
+    "vue": "^2.6.12",
+    "vue-router": "^3.4.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "@babel/plugin-proposal-class-properties": "^7.4.0",
+    "@babel/plugin-proposal-decorators": "^7.4.0",
+    "@babel/plugin-proposal-export-namespace-from": "^7.2.0",
+    "@babel/plugin-proposal-function-sent": "^7.2.0",
+    "@babel/plugin-proposal-json-strings": "^7.2.0",
+    "@babel/plugin-proposal-numeric-separator": "^7.2.0",
+    "@babel/plugin-proposal-throw-expressions": "^7.2.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "@babel/plugin-syntax-import-meta": "^7.2.0",
+    "@babel/plugin-syntax-jsx": "^7.2.0",
+    "@babel/plugin-transform-runtime": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@vue/cli-plugin-babel": "^3.6.0",
+    "@vue/cli-plugin-e2e-cypress": "^3.6.0",
+    "@vue/cli-plugin-eslint": "^3.6.0",
+    "@vue/cli-service": "^3.6.0",
+    "babel-loader": "^8.0.5",
+    "babel-plugin-syntax-jsx": "^6.18.0",
+    "babel-plugin-transform-vue-jsx": "^3.7.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.2.2",
+    "vue-loader": "^15.7.0",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
